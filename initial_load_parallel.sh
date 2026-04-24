@@ -8,8 +8,9 @@
 #
 #  Two-hub architecture (WEST GG + EAST GG):
 #    Change pipeline : EWEST → trail ew → DPWE → trail dw → RWEST → EAST DB
-#    Init pipeline   : EI<N> → trail e<N> → DP<N> → trail d<N> → RI<N> → EAST DB
+#    Init pipeline   : EI<N> → trail <pair> → DP<N> → trail <pair> → RI<N> → EAST DB
 #                      (one pipeline per table, rolling queue of N concurrent)
+#                      trail <pair> = 2-char letter pair: aa, ab, ac, ... (674 max slots)
 #
 #  Parallelism model — global rolling queue (INIT_PARALLELISM = 3):
 #
@@ -30,16 +31,20 @@
 #      The extract queue is not gated — extracts run freely across all levels.
 #
 #  Process naming (GG 8-char process limit, 2-char trail prefix limit):
-#    EI01..EI09  — Initial Load Extracts   (trail prefix e1..e9  on WEST)
-#    DP01..DP09  — Initial Load Dist Paths (trail prefix d1..d9  on EAST)
-#    RI01..RI09  — Initial Load Replicats
+#    EI01..EI99+ — Initial Load Extracts   (2-char letter-pair trail on WEST, e.g. aa, ab, ...)
+#    DP01..DP99+ — Initial Load Dist Paths (same letter-pair trail forwarded to EAST)
+#    RI01..RI99+ — Initial Load Replicats
+#
+#  Trail prefix scheme — slot_to_2char():
+#    Maps slot 1..674 → unique 2-char pair (aa..zz), skipping reserved change-pipeline
+#    trails 'dw' (raw 100) and 'ew' (raw 126). Supports hundreds of tables.
 #
 #  Example with HR (7 tables, 2 FK levels, 3 slots):
-#    Start  : EI01(COUNTRIES) + EI02(DEPARTMENTS) + EI03(EMPLOYEES)
-#    Slot 1 : COUNTRIES done → delivery01 bg, EI04(JOBS) starts
-#    Slot 2 : DEPARTMENTS done → delivery02 bg, EI05(LOCATIONS) starts
-#    Slot 3 : EMPLOYEES done → delivery03 bg, EI06(REGIONS) starts
-#    Slot 4 : JOBS done → delivery04 bg, EI07(JOB_HISTORY) starts
+#    Start  : EI01(COUNTRIES/aa) + EI02(DEPARTMENTS/ab) + EI03(EMPLOYEES/ac)
+#    Slot 1 : COUNTRIES done → delivery01 bg, EI04(JOBS/ad) starts
+#    Slot 2 : DEPARTMENTS done → delivery02 bg, EI05(LOCATIONS/ae) starts
+#    Slot 3 : EMPLOYEES done → delivery03 bg, EI06(REGIONS/af) starts
+#    Slot 4 : JOBS done → delivery04 bg, EI07(JOB_HISTORY/ag) starts
 #    Slot 5 : LOCATIONS done → delivery05 bg
 #    Slot 6 : REGIONS done → delivery06 bg
 #    Slot 7 : JOB_HISTORY done → delivery07 bg (gates on level-0 markers)
@@ -112,20 +117,47 @@ get_ogg_port() {
 
 # Slot-number → process/trail name helpers
 #
-# GoldenGate process name limit : 8 characters  → EI01..EI09, DP01..DP09, RI01..RI09
-# GoldenGate trail prefix limit : 2 characters  → e1..e9 (WEST), d1..d9 (EAST)
+# GoldenGate process name limit : 8 characters  → EI01, EI02, ... EI100, EI101, ...
+# GoldenGate trail prefix limit : 2 characters  → 2-char letter-pair scheme (aa, ab, ... zz)
 #
 # Each slot gets its own isolated pipeline:
-#   EI<N>  (extract, source:tables)  writes trail e<N> on WEST
-#   DP<N>  (dist path)               forwards  e<N> → d<N>  to EAST
-#   RI<N>  (replicat, non-integrated) reads trail d<N> on EAST
+#   EI<N>  (extract, source:tables)  writes trail <pair> on WEST
+#   DP<N>  (dist path)               forwards  <pair> → <pair>  to EAST (same prefix, different GG)
+#   RI<N>  (replicat, non-integrated) reads trail <pair> on EAST
 #
-# Maximum 9 concurrent slots (limited by single-digit trail suffix).
+# Capacity: 674 concurrent slots (26×26=676 letter-pair combinations minus
+#   reserved change-pipeline trails 'dw' and 'ew').
 einit_name()  { printf "EI%02d" "$1"; }
 dpei_name()   { printf "DP%02d" "$1"; }
 rinit_name()  { printf "RI%02d" "$1"; }
-trail_west()  { echo "e${1}"; }   # e1..e9  on WEST GG
-trail_east()  { echo "d${1}"; }   # d1..d9  on EAST GG
+
+# slot_to_2char <slot>
+#
+# Maps slot number (1-based) to a unique 2-character lowercase trail prefix,
+# skipping the two reserved change-pipeline trail names:
+#   'dw'  →  raw position 100  (3×26 + 22)
+#   'ew'  →  raw position 126  (4×26 + 22)
+#
+# Mapping:
+#   Slots   1..100  →  raw   0..99   →  aa..dv  (no skips needed)
+#   Slots 101..125  →  raw 101..125  →  dx..ev  (skip dw=raw 100)
+#   Slots 126..674  →  raw 127..675  →  ex..zz  (skip dw and ew)
+slot_to_2char() {
+    local slot=$1
+    local idx=$(( slot - 1 ))
+    local raw
+    if   [[ $idx -ge 125 ]]; then
+        raw=$(( idx + 2 ))   # skip both dw (raw 100) and ew (raw 126)
+    elif [[ $idx -ge 100 ]]; then
+        raw=$(( idx + 1 ))   # skip dw (raw 100) only
+    else
+        raw=$idx
+    fi
+    local alpha="abcdefghijklmnopqrstuvwxyz"
+    printf "%s%s" "${alpha:$(( raw / 26 )):1}" "${alpha:$(( raw % 26 )):1}"
+}
+trail_west() { slot_to_2char "$1"; }   # 2-char letter-pair trail on WEST GG
+trail_east() { slot_to_2char "$1"; }   # same letter-pair on EAST GG (different instance/dir)
 
 # api_call <METHOD> <URL> [JSON_BODY]
 # Writes the HTTP response body to $RESPONSE_FILE (per-slot temp file set by
@@ -802,8 +834,32 @@ cleanup_parallel_processes
 sleep 3
 
 echo "--- Trail file cleanup ---"
-delete_trail_files "oggWEST" "ew" "e1" "e2" "e3" "e4" "e5" "e6" "e7" "e8" "e9"
-delete_trail_files "oggEAST" "dw" "d1" "d2" "d3" "d4" "d5" "d6" "d7" "d8" "d9"
+# Delete ALL 2-char lowercase trail files on both GG instances.
+# The entire pipeline (change + init) is rebuilt in Steps 5-10, so ew/dw
+# can also be removed here along with any leftover letter-pair init trails
+# from a previous run (aa, ab, ..., zz — whatever slots were used).
+echo "  WEST GG — deleting all 2-char trail files..."
+docker exec oggWEST bash -c "
+    cnt=\$(find /u02/Deployment/var/lib/data/ -maxdepth 1 -type f \
+         -name '[a-z][a-z]*' 2>/dev/null | wc -l | tr -d '[:space:]')
+    if [[ \"\$cnt\" -gt 0 ]]; then
+        find /u02/Deployment/var/lib/data/ -maxdepth 1 -type f -name '[a-z][a-z]*' -delete
+        echo \"    Deleted \$cnt trail file(s).\"
+    else
+        echo '    No trail files found — skipping.'
+    fi
+"
+echo "  EAST GG — deleting all 2-char trail files..."
+docker exec oggEAST bash -c "
+    cnt=\$(find /u02/Deployment/var/lib/data/ -maxdepth 1 -type f \
+         -name '[a-z][a-z]*' 2>/dev/null | wc -l | tr -d '[:space:]')
+    if [[ \"\$cnt\" -gt 0 ]]; then
+        find /u02/Deployment/var/lib/data/ -maxdepth 1 -type f -name '[a-z][a-z]*' -delete
+        echo \"    Deleted \$cnt trail file(s).\"
+    else
+        echo '    No trail files found — skipping.'
+    fi
+"
 
 
 # ─────────────────────────────────────────────────────────────────────────────
