@@ -1,0 +1,624 @@
+alexlima@Alexs-MacBook-Pro compose26aiGG % ./initial_load_parallel.sh 3
+
+════════════════════════════════════════════════════════════
+  CLEANUP: Removing existing pipeline and parallel initial load processes
+════════════════════════════════════════════════════════════
+--- Change pipeline ---
+  Stopping RWEST (current: running)...
+  ✔    RWEST status: stopped
+  Deleting RWEST...
+  ✔  RWEST deleted.
+  Stopping DPWE (current: running)...
+  ✔    DPWE status: stopped
+  Deleting DPWE...
+  ✔  DPWE deleted.
+  Stopping EWEST (current: running)...
+  ✔    EWEST status: running
+  ✔    EWEST status: running
+  ✔    EWEST status: running
+  ✔    EWEST status: stopped
+  Deleting EWEST...
+  ✔  EWEST deleted.
+--- Parallel initial load process cleanup ---
+  Scanning for leftover RI* processes on EAST...
+  Scanning for leftover DP* processes on WEST...
+  Scanning for leftover EI* processes on WEST...
+--- Trail file cleanup ---
+  WEST GG — deleting all 2-char trail files...
+    Deleted 65 trail file(s).
+  EAST GG — deleting all 2-char trail files...
+    Deleted 66 trail file(s).
+
+════════════════════════════════════════════════════════════
+  STEP 3: Disable FK constraints + truncate HR tables on TARGET (EAST) DB
+════════════════════════════════════════════════════════════
+  ✔  FK constraints disabled and all HR tables truncated on EAST DB.
+
+════════════════════════════════════════════════════════════
+  STEP 5: Create change Extract (EWEST) on WEST GG
+════════════════════════════════════════════════════════════
+{
+  "$schema": "api:standardResponse",
+  "links": [
+    {
+      "rel": "canonical",
+      "href": "https://localhost:9090/services/v2/extracts/EWEST",
+      "mediaType": "application/json"
+    },
+    {
+      "rel": "self",
+      "href": "https://localhost:9090/services/v2/extracts/EWEST",
+      "mediaType": "application/json"
+    }
+  ],
+  "messages": [
+    {
+      "$schema": "ogg:message",
+      "title": "Integrated Extract added.",
+      "code": "OGG-08100",
+      "severity": "INFO",
+      "issued": "2026-09-22T19:38:05Z",
+      "type": "https://docs.oracle.com/en/middleware/goldengate/core/23.26/error-messages/"
+    },
+    {
+      "$schema": "ogg:message",
+      "title": "Extract group EWEST successfully registered with database at SCN 5108601.",
+      "code": "OGG-02003",
+      "severity": "INFO",
+      "issued": "2026-09-22T19:38:07Z",
+      "type": "https://docs.oracle.com/en/middleware/goldengate/core/23.26/error-messages/"
+    },
+    {
+      "$schema": "ogg:message",
+      "title": "Parameter file EWEST.prm passed validity check.",
+      "code": "OGG-10183",
+      "severity": "INFO",
+      "issued": "2026-09-22T19:38:07Z",
+      "type": "https://docs.oracle.com/en/middleware/goldengate/core/23.26/error-messages/"
+    },
+    {
+      "$schema": "ogg:message",
+      "title": "Extract group EWEST starting.",
+      "code": "OGG-00975",
+      "severity": "INFO",
+      "issued": "2026-09-22T19:38:07Z",
+      "type": "https://docs.oracle.com/en/middleware/goldengate/core/23.26/error-messages/"
+    },
+    {
+      "$schema": "ogg:message",
+      "title": "Extract group EWEST started.",
+      "code": "OGG-15426",
+      "severity": "INFO",
+      "issued": "2026-09-22T19:38:07Z",
+      "type": "https://docs.oracle.com/en/middleware/goldengate/core/23.26/error-messages/"
+    }
+  ]
+}
+  ✔  EWEST created and started.
+
+════════════════════════════════════════════════════════════
+  STEP 5b: Copy wallet + create change Dist Path (DPWE) on WEST GG
+════════════════════════════════════════════════════════════
+Successfully copied 832B (transferred 2.56kB) to /Users/alexlima/Library/CloudStorage/OneDrive-OracleCorporation/ORACLE_FTE_Files/LABS/Docker/compose26aiGG/.
+Successfully copied 832B (transferred 2.56kB) to oggEAST:/u02/Deployment/var/lib/wallet/cwallet.sso
+  ✔  Wallet copied to EAST.
+{
+  "$schema": "api:standardResponse",
+  "links": [
+    {
+      "rel": "canonical",
+      "href": "https://localhost:9090/services/v2/sources/DPWE",
+      "mediaType": "application/json"
+    },
+    {
+      "rel": "self",
+      "href": "https://localhost:9090/services/v2/sources/DPWE",
+      "mediaType": "application/json"
+    }
+  ],
+  "messages": [
+    {
+      "$schema": "ogg:message",
+      "title": "The path 'DPWE' has been added.",
+      "code": "OGG-08511",
+      "severity": "INFO",
+      "issued": "2026-09-22T19:38:08Z",
+      "type": "https://docs.oracle.com/en/middleware/goldengate/core/23.26/error-messages/"
+    }
+  ]
+}
+  ✔  DPWE created and started.
+
+════════════════════════════════════════════════════════════
+  STEP 6: Create change Replicat (RWEST) on EAST GG — stopped
+════════════════════════════════════════════════════════════
+{
+  "$schema": "api:standardResponse",
+  "links": [
+    {
+      "rel": "canonical",
+      "href": "https://localhost:8080/services/v2/replicats/RWEST",
+      "mediaType": "application/json"
+    },
+    {
+      "rel": "self",
+      "href": "https://localhost:8080/services/v2/replicats/RWEST",
+      "mediaType": "application/json"
+    }
+  ],
+  "messages": [
+    {
+      "$schema": "ogg:message",
+      "title": "Parallel Replicat added.",
+      "code": "OGG-08100",
+      "severity": "INFO",
+      "issued": "2026-09-22T19:38:08Z",
+      "type": "https://docs.oracle.com/en/middleware/goldengate/core/23.26/error-messages/"
+    },
+    {
+      "$schema": "ogg:message",
+      "title": "Parameter file RWEST.prm passed validity check.",
+      "code": "OGG-10183",
+      "severity": "INFO",
+      "issued": "2026-09-22T19:38:08Z",
+      "type": "https://docs.oracle.com/en/middleware/goldengate/core/23.26/error-messages/"
+    }
+  ]
+}
+  ✔  RWEST created (stopped — will start at Step 10).
+
+════════════════════════════════════════════════════════════
+  STEP 7: Capture SCN from source (WEST) DB
+════════════════════════════════════════════════════════════
+  ✔  Captured SCN: 5109972
+
+════════════════════════════════════════════════════════════
+  STEP 8: Discover tables, compute FK load order, run parallel initial load
+════════════════════════════════════════════════════════════
+  ✔  Found 7 table(s) in HR.
+  ✔  Querying FK dependency graph from source DB...
+
+  ✔  FK-aware load plan: 7 table(s), 44 level(s), 3 concurrent extract slot(s):
+    Level 0: JOBS REGIONS
+    Level 1: COUNTRIES
+    Level 2: LOCATIONS
+    Level 3:
+    Level 4:
+    Level 5:
+    Level 6:
+    Level 7:
+    Level 8:
+    Level 9:
+    Level 10:
+    Level 11:
+    Level 12:
+    Level 13:
+    Level 14:
+    Level 15:
+    Level 16:
+    Level 17:
+    Level 18:
+    Level 19:
+    Level 20:
+    Level 21:
+    Level 22:
+    Level 23:
+    Level 24:
+    Level 25:
+    Level 26:
+    Level 27:
+    Level 28:
+    Level 29:
+    Level 30:
+    Level 31:
+    Level 32:
+    Level 33:
+    Level 34:
+    Level 35:
+    Level 36:
+    Level 37:
+    Level 38:
+    Level 39:
+    Level 40:
+    Level 41:
+    Level 42: EMPLOYEES
+    Level 43: DEPARTMENTS JOB_HISTORY
+
+    Queue order: JOBS REGIONS COUNTRIES LOCATIONS EMPLOYEES DEPARTMENTS JOB_HISTORY
+    Extracts roll at 3 concurrent.  Deliveries run in background.
+    Level-N deliveries gate on Level-(N-1) done markers before starting RINIT.
+
+  ✔  Slot 1 | Level 0 | Extract: HR.JOBS
+  ✔  Slot 2 | Level 0 | Extract: HR.REGIONS
+  ✔  Slot 3 | Level 1 | Extract: HR.COUNTRIES
+  ✔  [Slot 2 | REGIONS] EXTRACT -- EI02 / DP02  trails ab->ab  SCN=5109972
+  ✔  [Slot 2 | REGIONS] Creating EI02...
+  ✔  [Slot 1 | JOBS] EXTRACT -- EI01 / DP01  trails aa->aa  SCN=5109972
+  ✔  [Slot 1 | JOBS] Creating EI01...
+  ✔  [Slot 3 | COUNTRIES] EXTRACT -- EI03 / DP03  trails ac->ac  SCN=5109972
+  ✔  [Slot 3 | COUNTRIES] Creating EI03...
+  ✔  [Slot 2 | REGIONS] Creating DP02 (ab -> ab)...
+  ✔  [Slot 3 | COUNTRIES] Creating DP03 (ac -> ac)...
+  ✔  [Slot 1 | JOBS] Creating DP01 (aa -> aa)...
+{
+  "$schema": "api:standardResponse",
+  "links": [
+    {
+      "rel": "canonical",
+      "href": "https://localhost:9090/services/v2/sources/DP03",
+      "mediaType": "application/json"
+    },
+    {
+      "rel": "self",
+      "href": "https://localhost:9090/services/v2/sources/DP03",
+      "mediaType": "application/json"
+    }
+  ],
+  "messages": [
+    {
+      "$schema": "ogg:message",
+      "title": "The path 'DP03' has been added.",
+      "code": "OGG-08511",
+      "severity": "INFO",
+      "issued": "2026-09-22T19:38:13Z",
+      "type": "https://docs.oracle.com/en/middleware/goldengate/core/23.26/error-messages/"
+    }
+  ]
+}
+{
+  "$schema": "api:standardResponse",
+  "links": [
+    {
+      "rel": "canonical",
+      "href": "https://localhost:9090/services/v2/sources/DP02",
+      "mediaType": "application/json"
+    },
+    {
+      "rel": "self",
+      "href": "https://localhost:9090/services/v2/sources/DP02",
+      "mediaType": "application/json"
+    }
+  ],
+  "messages": [
+    {
+      "$schema": "ogg:message",
+      "title": "The path 'DP02' has been added.",
+      "code": "OGG-08511",
+      "severity": "INFO",
+      "issued": "2026-09-22T19:38:13Z",
+      "type": "https://docs.oracle.com/en/middleware/goldengate/core/23.26/error-messages/"
+    }
+  ]
+}
+  ✔  [Slot 3 | COUNTRIES] DP03 running.
+  ✔  [Slot 3 | COUNTRIES] Waiting for EI03 to self-stop...
+  ✔  [Slot 2 | REGIONS] DP02 running.
+  ✔  [Slot 2 | REGIONS] Waiting for EI02 to self-stop...
+{
+  "$schema": "api:standardResponse",
+  "links": [
+    {
+      "rel": "canonical",
+      "href": "https://localhost:9090/services/v2/sources/DP01",
+      "mediaType": "application/json"
+    },
+    {
+      "rel": "self",
+      "href": "https://localhost:9090/services/v2/sources/DP01",
+      "mediaType": "application/json"
+    }
+  ],
+  "messages": [
+    {
+      "$schema": "ogg:message",
+      "title": "The path 'DP01' has been added.",
+      "code": "OGG-08511",
+      "severity": "INFO",
+      "issued": "2026-09-22T19:38:14Z",
+      "type": "https://docs.oracle.com/en/middleware/goldengate/core/23.26/error-messages/"
+    }
+  ]
+}
+  ✔  [Slot 1 | JOBS] DP01 running.
+  ✔  [Slot 1 | JOBS] Waiting for EI01 to self-stop...
+  ✔  [Slot 2 | REGIONS] EI02 done — trail ab written. Slot free.
+  ✔  [Slot 3 | COUNTRIES] EI03 done — trail ac written. Slot free.
+  ✔  [Slot 1 | JOBS] EI01 done — trail aa written. Slot free.
+  ✔  Slot 1 | Level 0 | Extract done: JOBS — delivery launching in background.
+  ✔  Slot 4 | Level 2 | Extract: HR.LOCATIONS
+  ✔  Slot 2 | Level 0 | Extract done: REGIONS — delivery launching in background.
+  ✔  Slot 5 | Level 42 | Extract: HR.EMPLOYEES
+  ✔  [Slot 1 | JOBS] DELIVERY -- DP01 lag wait -> RI01
+  ✔  Slot 3 | Level 1 | Extract done: COUNTRIES — delivery launching in background.
+  ✔  Slot 6 | Level 43 | Extract: HR.DEPARTMENTS
+  ✔  [Slot 4 | LOCATIONS] EXTRACT -- EI04 / DP04  trails ad->ad  SCN=5109972
+  ✔  [Slot 4 | LOCATIONS] Creating EI04...
+  ✔  [Slot 2 | REGIONS] DELIVERY -- DP02 lag wait -> RI02
+  ✔  [Slot 5 | EMPLOYEES] EXTRACT -- EI05 / DP05  trails ae->ae  SCN=5109972
+  ✔  [Slot 5 | EMPLOYEES] Creating EI05...
+  ✔  [Slot 3 | COUNTRIES] DELIVERY -- waiting for parent tables: JOBS REGIONS
+  ✔  [Slot 6 | DEPARTMENTS] EXTRACT -- EI06 / DP06  trails af->af  SCN=5109972
+  ✔  [Slot 6 | DEPARTMENTS] Creating EI06...
+  ✔  [Slot 4 | LOCATIONS] Creating DP04 (ad -> ad)...
+  ✔  [Slot 6 | DEPARTMENTS] Creating DP06 (af -> af)...
+  ✔  [Slot 5 | EMPLOYEES] Creating DP05 (ae -> ae)...
+  ✔  [Slot 1 | JOBS] DP01 lag=0s
+  ✔  [Slot 1 | JOBS] DP01 caught up — trail aa ready on EAST.
+  ✔  [Slot 1 | JOBS] Creating RI01 on EAST (trail aa)...
+  ✔  [Slot 2 | REGIONS] DP02 lag=0s
+  ✔  [Slot 2 | REGIONS] DP02 caught up — trail ab ready on EAST.
+  ✔  [Slot 2 | REGIONS] Creating RI02 on EAST (trail ab)...
+{
+  "$schema": "api:standardResponse",
+  "links": [
+    {
+      "rel": "canonical",
+      "href": "https://localhost:9090/services/v2/sources/DP05",
+      "mediaType": "application/json"
+    },
+    {
+      "rel": "self",
+      "href": "https://localhost:9090/services/v2/sources/DP05",
+      "mediaType": "application/json"
+    }
+  ],
+  "messages": [
+    {
+      "$schema": "ogg:message",
+      "title": "The path 'DP05' has been added.",
+      "code": "OGG-08511",
+      "severity": "INFO",
+      "issued": "2026-09-22T19:38:33Z",
+      "type": "https://docs.oracle.com/en/middleware/goldengate/core/23.26/error-messages/"
+    }
+  ]
+}
+{
+  "$schema": "api:standardResponse",
+  "links": [
+    {
+      "rel": "canonical",
+      "href": "https://localhost:9090/services/v2/sources/DP04",
+      "mediaType": "application/json"
+    },
+    {
+      "rel": "self",
+      "href": "https://localhost:9090/services/v2/sources/DP04",
+      "mediaType": "application/json"
+    }
+  ],
+  "messages": [
+    {
+      "$schema": "ogg:message",
+      "title": "The path 'DP04' has been added.",
+      "code": "OGG-08511",
+      "severity": "INFO",
+      "issued": "2026-09-22T19:38:33Z",
+      "type": "https://docs.oracle.com/en/middleware/goldengate/core/23.26/error-messages/"
+    }
+  ]
+}
+  ✔  [Slot 5 | EMPLOYEES] DP05 running.
+  ✔  [Slot 5 | EMPLOYEES] Waiting for EI05 to self-stop...
+  ✔  [Slot 4 | LOCATIONS] DP04 running.
+  ✔  [Slot 4 | LOCATIONS] Waiting for EI04 to self-stop...
+  ✔  [Slot 1 | JOBS] RI01 started — waiting to reach trail seq 1...
+  ✔  [Slot 2 | REGIONS] RI02 started — waiting to reach trail seq 1...
+  ✔  [Slot 2 | REGIONS] RI02 seq=0 offset=0 (target=1)
+  ✔  [Slot 1 | JOBS] RI01 seq=0 offset=0 (target=1)
+{
+  "$schema": "api:standardResponse",
+  "links": [
+    {
+      "rel": "canonical",
+      "href": "https://localhost:9090/services/v2/sources/DP06",
+      "mediaType": "application/json"
+    },
+    {
+      "rel": "self",
+      "href": "https://localhost:9090/services/v2/sources/DP06",
+      "mediaType": "application/json"
+    }
+  ],
+  "messages": [
+    {
+      "$schema": "ogg:message",
+      "title": "The path 'DP06' has been added.",
+      "code": "OGG-08511",
+      "severity": "INFO",
+      "issued": "2026-09-22T19:38:34Z",
+      "type": "https://docs.oracle.com/en/middleware/goldengate/core/23.26/error-messages/"
+    }
+  ]
+}
+  ✔  [Slot 6 | DEPARTMENTS] DP06 running.
+  ✔  [Slot 6 | DEPARTMENTS] Waiting for EI06 to self-stop...
+  ✔  [Slot 5 | EMPLOYEES] EI05 done — trail ae written. Slot free.
+  ✔  [Slot 4 | LOCATIONS] EI04 done — trail ad written. Slot free.
+  ✔  [Slot 1 | JOBS] RI01 seq=1 offset=1367 (target=1)
+  ✔  [Slot 2 | REGIONS] RI02 seq=1 offset=1367 (target=1)
+  ✔  [Slot 6 | DEPARTMENTS] EI06 done — trail af written. Slot free.
+  ✔  Slot 4 | Level 2 | Extract done: LOCATIONS — delivery launching in background.
+  ✔  Slot 7 | Level 43 | Extract: HR.JOB_HISTORY
+  ✔  Slot 5 | Level 42 | Extract done: EMPLOYEES — delivery launching in background.
+  ✔  Slot 6 | Level 43 | Extract done: DEPARTMENTS — delivery launching in background.
+  ✔  [Slot 4 | LOCATIONS] DELIVERY -- waiting for parent tables: COUNTRIES
+  ✔  [Slot 5 | EMPLOYEES] DELIVERY -- DP05 lag wait -> RI05
+  ✔  [Slot 7 | JOB_HISTORY] EXTRACT -- EI07 / DP07  trails ag->ag  SCN=5109972
+  ✔  [Slot 7 | JOB_HISTORY] Creating EI07...
+  ✔  [Slot 6 | DEPARTMENTS] DELIVERY -- waiting for parent tables: EMPLOYEES
+  ✔  [Slot 5 | EMPLOYEES] DP05 lag=0s
+  ✔  [Slot 5 | EMPLOYEES] DP05 caught up — trail ae ready on EAST.
+  ✔  [Slot 5 | EMPLOYEES] Creating RI05 on EAST (trail ae)...
+  ✔  [Slot 7 | JOB_HISTORY] Creating DP07 (ag -> ag)...
+  ✔  [Slot 5 | EMPLOYEES] RI05 started — waiting to reach trail seq 1...
+  ✔  [Slot 5 | EMPLOYEES] RI05 seq=0 offset=0 (target=1)
+{
+  "$schema": "api:standardResponse",
+  "links": [
+    {
+      "rel": "canonical",
+      "href": "https://localhost:9090/services/v2/sources/DP07",
+      "mediaType": "application/json"
+    },
+    {
+      "rel": "self",
+      "href": "https://localhost:9090/services/v2/sources/DP07",
+      "mediaType": "application/json"
+    }
+  ],
+  "messages": [
+    {
+      "$schema": "ogg:message",
+      "title": "The path 'DP07' has been added.",
+      "code": "OGG-08511",
+      "severity": "INFO",
+      "issued": "2026-09-22T19:38:53Z",
+      "type": "https://docs.oracle.com/en/middleware/goldengate/core/23.26/error-messages/"
+    }
+  ]
+}
+  ✔  [Slot 7 | JOB_HISTORY] DP07 running.
+  ✔  [Slot 7 | JOB_HISTORY] Waiting for EI07 to self-stop...
+  ✔  [Slot 1 | JOBS] RI01 seq=1 offset=1367 (target=1)
+  ✔  [Slot 1 | JOBS] RI01 stable — all rows applied.
+  ✔  [Slot 1 | JOBS] Stopping RI01...
+  ✔  [Slot 2 | REGIONS] RI02 seq=1 offset=1367 (target=1)
+  ✔  [Slot 2 | REGIONS] RI02 stable — all rows applied.
+  ✔  [Slot 2 | REGIONS] Stopping RI02...
+  ✔  [Slot 5 | EMPLOYEES] RI05 seq=1 offset=1367 (target=1)
+  ✔  [Slot 7 | JOB_HISTORY] EI07 done — trail ag written. Slot free.
+  ✔  [Slot 1 | JOBS] Stopping DP01...
+  ✔  [Slot 2 | REGIONS] Stopping DP02...
+  ✔  Slot 7 | Level 43 | Extract done: JOB_HISTORY — delivery launching in background.
+  ✔  All 7 extract(s) complete. Waiting for 7 delivery job(s)...
+  ✔  [Slot 7 | JOB_HISTORY] DELIVERY -- waiting for parent tables: EMPLOYEES
+  ✔  [Slot 1 | JOBS] DONE. HR.JOBS fully loaded.
+  ✔  Delivery JOBS(slot1) confirmed complete.
+  ✔  [Slot 2 | REGIONS] DONE. HR.REGIONS fully loaded.
+  ✔  Delivery REGIONS(slot2) confirmed complete.
+  ✔  [Slot 3 | COUNTRIES] Parent tables confirmed — proceeding.
+  ✔  [Slot 3 | COUNTRIES] DP03 lag=0s
+  ✔  [Slot 3 | COUNTRIES] DP03 caught up — trail ac ready on EAST.
+  ✔  [Slot 3 | COUNTRIES] Creating RI03 on EAST (trail ac)...
+  ✔  [Slot 3 | COUNTRIES] RI03 started — waiting to reach trail seq 1...
+  ✔  [Slot 3 | COUNTRIES] RI03 seq=0 offset=0 (target=1)
+  ✔  [Slot 5 | EMPLOYEES] RI05 seq=1 offset=1367 (target=1)
+  ✔  [Slot 5 | EMPLOYEES] RI05 stable — all rows applied.
+  ✔  [Slot 5 | EMPLOYEES] Stopping RI05...
+  ✔  [Slot 5 | EMPLOYEES] Stopping DP05...
+  ✔  [Slot 5 | EMPLOYEES] DONE. HR.EMPLOYEES fully loaded.
+  ✔  [Slot 3 | COUNTRIES] RI03 seq=1 offset=1367 (target=1)
+  ✔  [Slot 6 | DEPARTMENTS] Parent tables confirmed — proceeding.
+  ✔  [Slot 6 | DEPARTMENTS] DP06 lag=0s
+  ✔  [Slot 6 | DEPARTMENTS] DP06 caught up — trail af ready on EAST.
+  ✔  [Slot 6 | DEPARTMENTS] Creating RI06 on EAST (trail af)...
+  ✔  [Slot 6 | DEPARTMENTS] RI06 started — waiting to reach trail seq 1...
+  ✔  [Slot 6 | DEPARTMENTS] RI06 seq=0 offset=0 (target=1)
+  ✔  [Slot 7 | JOB_HISTORY] Parent tables confirmed — proceeding.
+  ✔  [Slot 7 | JOB_HISTORY] DP07 lag=0s
+  ✔  [Slot 7 | JOB_HISTORY] DP07 caught up — trail ag ready on EAST.
+  ✔  [Slot 7 | JOB_HISTORY] Creating RI07 on EAST (trail ag)...
+  ✔  [Slot 7 | JOB_HISTORY] RI07 started — waiting to reach trail seq 1...
+  ✔  [Slot 7 | JOB_HISTORY] RI07 seq=0 offset=0 (target=1)
+  ✔  [Slot 3 | COUNTRIES] RI03 seq=1 offset=1367 (target=1)
+  ✔  [Slot 3 | COUNTRIES] RI03 stable — all rows applied.
+  ✔  [Slot 3 | COUNTRIES] Stopping RI03...
+  ✔  [Slot 6 | DEPARTMENTS] RI06 seq=1 offset=1367 (target=1)
+  ✔  [Slot 3 | COUNTRIES] Stopping DP03...
+  ✔  [Slot 7 | JOB_HISTORY] RI07 seq=1 offset=1367 (target=1)
+  ✔  [Slot 3 | COUNTRIES] DONE. HR.COUNTRIES fully loaded.
+  ✔  Delivery COUNTRIES(slot3) confirmed complete.
+  ✔  [Slot 4 | LOCATIONS] Parent tables confirmed — proceeding.
+  ✔  [Slot 4 | LOCATIONS] DP04 lag=0s
+  ✔  [Slot 4 | LOCATIONS] DP04 caught up — trail ad ready on EAST.
+  ✔  [Slot 4 | LOCATIONS] Creating RI04 on EAST (trail ad)...
+  ✔  [Slot 4 | LOCATIONS] RI04 started — waiting to reach trail seq 1...
+  ✔  [Slot 4 | LOCATIONS] RI04 seq=0 offset=0 (target=1)
+  ✔  [Slot 6 | DEPARTMENTS] RI06 seq=1 offset=1367 (target=1)
+  ✔  [Slot 6 | DEPARTMENTS] RI06 stable — all rows applied.
+  ✔  [Slot 6 | DEPARTMENTS] Stopping RI06...
+  ✔  [Slot 7 | JOB_HISTORY] RI07 seq=1 offset=1367 (target=1)
+  ✔  [Slot 7 | JOB_HISTORY] RI07 stable — all rows applied.
+  ✔  [Slot 7 | JOB_HISTORY] Stopping RI07...
+  ✔  [Slot 6 | DEPARTMENTS] Stopping DP06...
+  ✔  [Slot 6 | DEPARTMENTS] DONE. HR.DEPARTMENTS fully loaded.
+  ✔  [Slot 7 | JOB_HISTORY] Stopping DP07...
+  ✔  [Slot 4 | LOCATIONS] RI04 seq=1 offset=1367 (target=1)
+  ✔  [Slot 7 | JOB_HISTORY] DONE. HR.JOB_HISTORY fully loaded.
+  ✔  [Slot 4 | LOCATIONS] RI04 seq=1 offset=1367 (target=1)
+  ✔  [Slot 4 | LOCATIONS] RI04 stable — all rows applied.
+  ✔  [Slot 4 | LOCATIONS] Stopping RI04...
+  ✔  [Slot 4 | LOCATIONS] Stopping DP04...
+  ✔  [Slot 4 | LOCATIONS] DONE. HR.LOCATIONS fully loaded.
+  ✔  Delivery LOCATIONS(slot4) confirmed complete.
+  ✔  Delivery EMPLOYEES(slot5) confirmed complete.
+  ✔  Delivery DEPARTMENTS(slot6) confirmed complete.
+  ✔  Delivery JOB_HISTORY(slot7) confirmed complete.
+  ✔  All 7 table(s) from HR loaded successfully.
+  ✔  All 7 table(s) from HR loaded successfully.
+
+════════════════════════════════════════════════════════════
+  STEP 9c: Re-enable FK constraints on TARGET (EAST) DB
+════════════════════════════════════════════════════════════
+  ✔  FK constraints re-enabled on EAST DB.
+
+════════════════════════════════════════════════════════════
+  STEP 10: Start change Replicat (RWEST) at SCN 5109972
+════════════════════════════════════════════════════════════
+  ✔  Starting RWEST at SCN 5109972 via commands/execute...
+{
+  "$schema": "api:standardResponse",
+  "links": [
+    {
+      "rel": "canonical",
+      "href": "https://localhost:8080/services/v2/commands/execute",
+      "mediaType": "application/json"
+    },
+    {
+      "rel": "self",
+      "href": "https://localhost:8080/services/v2/commands/execute",
+      "mediaType": "application/json"
+    }
+  ],
+  "messages": [
+    {
+      "$schema": "ogg:message",
+      "title": "Replicat group RWEST starting.",
+      "code": "OGG-00975",
+      "severity": "INFO",
+      "issued": "2026-09-22T19:40:50Z",
+      "type": "https://docs.oracle.com/en/middleware/goldengate/core/23.26/error-messages/"
+    },
+    {
+      "$schema": "ogg:message",
+      "title": "Replicat group RWEST started.",
+      "code": "OGG-15445",
+      "severity": "INFO",
+      "issued": "2026-09-22T19:40:50Z",
+      "type": "https://docs.oracle.com/en/middleware/goldengate/core/23.26/error-messages/"
+    }
+  ]
+}
+  ✔  RWEST status: running
+  ✔  RWEST is RUNNING from SCN 5109972.
+
+════════════════════════════════════════════════════════════
+  ✔  Parallel Initial Load completed in 200s
+════════════════════════════════════════════════════════════
+  Tables loaded    : 7 (JOBS REGIONS COUNTRIES LOCATIONS EMPLOYEES DEPARTMENTS JOB_HISTORY)
+  FK levels        : 44
+  Parallelism used : 3 concurrent extract slots
+  Slots used total : 7
+  Init SCN         : 5109972
+
+  Change Extract   : EWEST  (running -- trail ew)
+  Change Dist Path : DPWE   (running -- ew -> dw)
+  Change Replicat  : RWEST  (running)
+  Init processes   : EI01..EI07 / DP01..DP07 / RI01..RI07  (all stopped)
+════════════════════════════════════════════════════════════
+
+  GG WEST WebUI : https://localhost:9090
+  GG EAST WebUI : https://localhost:8080
+
+alexlima@Alexs-MacBook-Pro compose26aiGG % 
